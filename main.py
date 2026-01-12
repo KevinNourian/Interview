@@ -11,7 +11,7 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 st.title("AI Interview Coach")
 
 # --- Initialize all session state variables ---
-for var in ["interview_type", "temperature", "messages", "session_over",
+for var in ["interview_type", "difficulty_level", "temperature", "messages", "session_over",
             "user_input", "first_question_asked"]:
     if var not in st.session_state:
         if var == "temperature":
@@ -32,6 +32,12 @@ interview_type = st.selectbox(
      "Healthcare", "Finance", "Technology", "Marketing"]
 )
 
+# --- Dropdown for difficulty level ---
+difficulty_level = st.selectbox(
+    "Choose your difficulty level:",
+    ["Select an option", "Easy", "Medium", "Hard"]
+)
+
 # --- Slider for temperature ---
 st.session_state.temperature = st.slider(
     "Set AI creativity (temperature):",
@@ -41,17 +47,44 @@ st.session_state.temperature = st.slider(
     step=0.05
 )
 
-# --- Initialize session after user selects type ---
-if st.session_state.interview_type is None and interview_type != "Select an option":
+# --- Initialize session after user selects type and difficulty ---
+if (st.session_state.interview_type is None and 
+    interview_type != "Select an option" and 
+    difficulty_level != "Select an option"):
+    
     st.session_state.interview_type = interview_type
+    st.session_state.difficulty_level = difficulty_level
+    
+    # Customize instructions based on difficulty level
+    difficulty_instructions = {
+        "Easy": """
+- Ask foundational and entry-level questions
+- Focus on basic concepts and straightforward scenarios
+- Provide encouraging and detailed feedback
+- Help build confidence with supportive guidance""",
+        "Medium": """
+- Ask intermediate-level questions that require some experience
+- Include scenario-based questions and practical applications
+- Provide balanced feedback highlighting both strengths and areas for improvement
+- Challenge the user moderately while remaining supportive""",
+        "Hard": """
+- Ask advanced, complex questions requiring deep expertise
+- Include challenging technical problems, edge cases, and strategic thinking
+- Provide critical and detailed feedback with high standards
+- Push the user to demonstrate mastery and expert-level reasoning"""
+    }
+    
     system_prompt = f"""
-You are an expert interview coach conducting a {st.session_state.interview_type} interview practice session.
+You are an expert interview coach conducting a {st.session_state.interview_type} interview practice session at a {st.session_state.difficulty_level} difficulty level.
 
 Your responsibilities:
 - Ask one question at a time, strictly related to {st.session_state.interview_type}
 - After each user answer, provide concise, constructive feedback
 - Then ask the next relevant question
 - Keep a professional, friendly, and concise tone
+
+Difficulty Level - {st.session_state.difficulty_level}:
+{difficulty_instructions[st.session_state.difficulty_level]}
 
 Deciding when to end the interview:
 - You have full control over when the interview concludes
