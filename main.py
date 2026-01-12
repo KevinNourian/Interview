@@ -68,6 +68,23 @@ Remember: You decide when the interview is complete based on the conversation fl
     st.session_state.session_over = False
     st.session_state.user_input = ""
 
+# --- Content Moderation Function ---
+def moderate_content(text):
+    """Check content using OpenAI's moderation API"""
+    try:
+        response = openai_client.moderations.create(input=text)
+        result = response.results[0]
+        
+        if result.flagged:
+            # Get specific categories that were flagged
+            flagged_categories = [cat for cat, flagged in result.categories.__dict__.items() if flagged]
+            return False, f"Content violates usage policies ({', '.join(flagged_categories)}). Please provide appropriate responses."
+        return True, ""
+    except Exception as e:
+        # If moderation fails, log error but allow content (fail open)
+        st.warning(f"Moderation check temporarily unavailable: {str(e)}")
+        return True, ""
+
 # --- Function to get AI response ---
 def get_ai_response():
     response = openai_client.chat.completions.create(
@@ -122,10 +139,16 @@ if st.session_state.first_question_asked and not st.session_state.session_over:
     
     if st.button("Submit Answer"):
         if user_input.strip():
-            st.session_state.messages.append({"role": "user", "content": user_input.strip()})
-            get_ai_response()
-            st.session_state.input_counter += 1  # Increment to create new text area
-            st.rerun()
+            # Moderate user input before processing
+            is_safe, error_message = moderate_content(user_input.strip())
+            
+            if not is_safe:
+                st.error(error_message)
+            else:
+                st.session_state.messages.append({"role": "user", "content": user_input.strip()})
+                get_ai_response()
+                st.session_state.input_counter += 1  # Increment to create new text area
+                st.rerun()
 
 # --- Session ended message ---
 if st.session_state.session_over:
