@@ -12,7 +12,7 @@ st.title("AI Interview Coach")
 
 # --- Initialize all session state variables ---
 for var in ["interview_type", "difficulty_level", "temperature", "messages", "session_over",
-            "user_input", "first_question_asked"]:
+            "user_input", "first_question_asked", "input_counter"]:
     if var not in st.session_state:
         if var == "temperature":
             st.session_state.temperature = 0.7
@@ -22,6 +22,8 @@ for var in ["interview_type", "difficulty_level", "temperature", "messages", "se
             st.session_state.session_over = False
         elif var == "first_question_asked":
             st.session_state.first_question_asked = False
+        elif var == "input_counter":
+            st.session_state.input_counter = 0
         else:
             st.session_state[var] = None
 
@@ -29,13 +31,21 @@ for var in ["interview_type", "difficulty_level", "temperature", "messages", "se
 interview_type = st.selectbox(
     "Choose your interview type:",
     ["Select an option", "Data Science", "Education", "Ecommerce",
-     "Healthcare", "Finance", "Technology", "Marketing"]
+     "Healthcare", "Finance", "Technology", "Marketing"],
+    index=0 if st.session_state.interview_type is None else 
+          ["Select an option", "Data Science", "Education", "Ecommerce",
+           "Healthcare", "Finance", "Technology", "Marketing"].index(st.session_state.interview_type) 
+          if st.session_state.interview_type in ["Data Science", "Education", "Ecommerce",
+                                                   "Healthcare", "Finance", "Technology", "Marketing"] else 0
 )
 
 # --- Dropdown for difficulty level ---
 difficulty_level = st.selectbox(
     "Choose your difficulty level:",
-    ["Select an option", "Easy", "Medium", "Hard"]
+    ["Select an option", "Easy", "Medium", "Hard"],
+    index=0 if st.session_state.difficulty_level is None else
+          ["Select an option", "Easy", "Medium", "Hard"].index(st.session_state.difficulty_level)
+          if st.session_state.difficulty_level in ["Easy", "Medium", "Hard"] else 0
 )
 
 # --- Slider for temperature ---
@@ -159,10 +169,6 @@ for msg in st.session_state.messages:
 
 # --- Input box and submit button: only if session NOT over ---
 if st.session_state.first_question_asked and not st.session_state.session_over:
-    # Use a unique key that changes after each submission to clear the text area
-    if "input_counter" not in st.session_state:
-        st.session_state.input_counter = 0
-    
     user_input = st.text_area(
         "Your answer:",
         value="",
@@ -183,6 +189,13 @@ if st.session_state.first_question_asked and not st.session_state.session_over:
                 st.session_state.input_counter += 1  # Increment to create new text area
                 st.rerun()
 
-# --- Session ended message ---
+# --- Session ended message and Reset button ---
 if st.session_state.session_over:
     st.success("Interview session complete. Thank you!")
+    
+    st.markdown("---")  # Add a visual separator
+    if st.button("Start New Interview", type="primary"):
+        # Clear all session state variables to reset to original state
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
