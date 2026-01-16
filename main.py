@@ -11,8 +11,8 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 st.title("AI Interview Coach")
 
 # --- Initialize all session state variables ---
-for var in ["interview_type", "difficulty_level", "temperature", "messages", "session_over",
-            "user_input", "first_question_asked", "input_counter"]:
+for var in ["interview_type", "difficulty_level", "interviewer_type", "temperature", "messages", 
+            "session_over", "user_input", "first_question_asked", "input_counter"]:
     if var not in st.session_state:
         if var == "temperature":
             st.session_state.temperature = 0.7
@@ -48,6 +48,15 @@ difficulty_level = st.selectbox(
           if st.session_state.difficulty_level in ["Easy", "Medium", "Hard"] else 0
 )
 
+# --- Dropdown for interviewer type ---
+interviewer_type = st.selectbox(
+    "Choose your interviewer type:",
+    ["Select an option", "Strict", "Neutral", "Friendly"],
+    index=0 if st.session_state.interviewer_type is None else
+          ["Select an option", "Strict", "Neutral", "Friendly"].index(st.session_state.interviewer_type)
+          if st.session_state.interviewer_type in ["Strict", "Neutral", "Friendly"] else 0
+)
+
 # --- Slider for temperature ---
 st.session_state.temperature = st.slider(
     "Set AI creativity (temperature):",
@@ -57,13 +66,15 @@ st.session_state.temperature = st.slider(
     step=0.05
 )
 
-# --- Initialize session after user selects type and difficulty ---
+# --- Initialize session after user selects type, difficulty, and interviewer type ---
 if (st.session_state.interview_type is None and 
     interview_type != "Select an option" and 
-    difficulty_level != "Select an option"):
+    difficulty_level != "Select an option" and
+    interviewer_type != "Select an option"):
     
     st.session_state.interview_type = interview_type
     st.session_state.difficulty_level = difficulty_level
+    st.session_state.interviewer_type = interviewer_type
     
     # Customize instructions based on difficulty level
     difficulty_instructions = {
@@ -84,17 +95,44 @@ if (st.session_state.interview_type is None and
 - Push the user to demonstrate mastery and expert-level reasoning"""
     }
     
+    # Customize instructions based on interviewer type
+    interviewer_instructions = {
+        "Strict": """
+- Maintain a formal, professional tone at all times
+- Set high expectations and hold the candidate accountable
+- Point out weaknesses and mistakes directly
+- Provide critical feedback without sugarcoating
+- Be demanding and challenge vague or incomplete answers
+- Show limited warmth or encouragement""",
+        "Neutral": """
+- Maintain a balanced, professional demeanor
+- Provide objective feedback that is neither overly critical nor overly encouraging
+- Be fair and impartial in your assessment
+- Focus on facts and concrete observations
+- Keep emotions and personal opinions minimal""",
+        "Friendly": """
+- Be warm, encouraging, and supportive throughout
+- Create a comfortable, low-pressure atmosphere
+- Celebrate strengths and progress enthusiastically
+- Frame constructive feedback gently and positively
+- Use encouraging language and show genuine interest
+- Help the candidate feel at ease and confident"""
+    }
+    
     system_prompt = f"""
-You are an expert interview coach conducting a {st.session_state.interview_type} interview practice session at a {st.session_state.difficulty_level} difficulty level.
+You are an expert interview coach conducting a {st.session_state.interview_type} interview practice session at a {st.session_state.difficulty_level} difficulty level with a {st.session_state.interviewer_type} interviewing style.
 
 Your responsibilities:
 - Ask one question at a time, strictly related to {st.session_state.interview_type}
 - After each user answer, provide concise, constructive feedback
 - Then ask the next relevant question
-- Keep a professional, friendly, and concise tone
+- Keep your responses concise
 
 Difficulty Level - {st.session_state.difficulty_level}:
 {difficulty_instructions[st.session_state.difficulty_level]}
+
+Interviewer Type - {st.session_state.interviewer_type}:
+{interviewer_instructions[st.session_state.interviewer_type]}
 
 Deciding when to end the interview:
 - You have full control over when the interview concludes
