@@ -45,6 +45,7 @@ The app simulates realistic interview sessions across multiple professional doma
 1. The user selects:
    - Interview type
    - Difficulty level
+   - Interviewer style
    - AI creativity (temperature)
 
 2. The AI interviewer:
@@ -65,3 +66,9 @@ The app simulates realistic interview sessions across multiple professional doma
 - **OpenAI API** – interview logic, feedback, moderation
 - **dotenv** – secure environment variable management
 
+---
+
+## Deployment
+
+The app is deployed on GCP at the following address:
+https://interview-app-697563534137.us-central1.run.app/
