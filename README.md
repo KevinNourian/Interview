@@ -1,4 +1,4 @@
-# 🎤 AI Interview Coach
+# AI Interview Coach
 
 An interactive **AI-powered interview practice application** built with **Streamlit** and **OpenAI**.  
 The app simulates realistic interview sessions across multiple professional domains and difficulty levels, providing **dynamic questions, real-time feedback, and structured interview flow**.
