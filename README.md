@@ -7,7 +7,7 @@ The app simulates realistic interview sessions across multiple professional doma
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Multiple Interview Domains**
   - Data Science
@@ -40,7 +40,7 @@ The app simulates realistic interview sessions across multiple professional doma
 
 ---
 
-## 🧠 How It Works
+## How It Works
 
 1. The user selects:
    - Interview type
@@ -58,7 +58,7 @@ The app simulates realistic interview sessions across multiple professional doma
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Python**
 - **Streamlit** – UI and session handling
