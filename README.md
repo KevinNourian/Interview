@@ -31,6 +31,9 @@ The app simulates realistic interview sessions across multiple professional doma
 - **Creativity Control**
   - Adjustable temperature slider to control AI response style
 
+  - **Nucleus Sampling Control**
+  - Adjustable top_p slider to control AI response style
+
 - **Content Moderation**
   - User inputs are checked via OpenAI’s moderation API for safe and appropriate use
 

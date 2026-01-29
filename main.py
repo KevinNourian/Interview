@@ -1,12 +1,16 @@
+"""AI Interview Coach - A Streamlit application for interview practice."""
+
 import os
-from openai import OpenAI
 from dotenv import load_dotenv
 import streamlit as st
+from openai import OpenAI
+
 
 # Load API key
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
 
 # Page configuration
 st.set_page_config(
@@ -198,15 +202,35 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title with custom styling
-st.markdown('<h1 class="main-title">✨ AI Interview Coach</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Practice and perfect your interview skills</p>', unsafe_allow_html=True)
+st.markdown(
+    '<h1 class="main-title">✨ AI Interview Coach</h1>',
+    unsafe_allow_html=True
+)
+st.markdown(
+    '<p class="subtitle">Practice and perfect your interview skills</p>',
+    unsafe_allow_html=True
+)
 
-# --- Initialize all session state variables ---
-for var in ["interview_type", "difficulty_level", "interviewer_type", "temperature", "messages", 
-            "session_over", "user_input", "first_question_asked", "input_counter"]:
+# Initialize all session state variables
+SESSION_VARS = [
+    "interview_type",
+    "difficulty_level",
+    "interviewer_type",
+    "temperature",
+    "top_p",
+    "messages",
+    "session_over",
+    "user_input",
+    "first_question_asked",
+    "input_counter"
+]
+
+for var in SESSION_VARS:
     if var not in st.session_state:
         if var == "temperature":
             st.session_state.temperature = 0.7
+        elif var == "top_p":
+            st.session_state.top_p = 0.5
         elif var == "messages":
             st.session_state.messages = []
         elif var == "session_over":
@@ -218,40 +242,67 @@ for var in ["interview_type", "difficulty_level", "interviewer_type", "temperatu
         else:
             st.session_state[var] = None
 
-# --- Interview Configuration Section ---
+# Interview Configuration Section
 col1, col2, col3 = st.columns(3)
 
+INTERVIEW_TYPES = [
+    "Select an option",
+    "Data Science",
+    "Education",
+    "Ecommerce",
+    "Healthcare",
+    "Finance",
+    "Technology",
+    "Marketing"
+]
+
+DIFFICULTY_LEVELS = ["Select an option", "Easy", "Medium", "Hard"]
+
+INTERVIEWER_STYLES = ["Select an option", "Friendly", "Neutral", "Strict"]
+
 with col1:
+    current_index = 0
+    if (st.session_state.interview_type is not None and
+            st.session_state.interview_type in INTERVIEW_TYPES):
+        current_index = INTERVIEW_TYPES.index(
+            st.session_state.interview_type
+        )
+    
     interview_type = st.selectbox(
         "Interview Type",
-        ["Select an option", "Data Science", "Education", "Ecommerce",
-         "Healthcare", "Finance", "Technology", "Marketing"],
-        index=0 if st.session_state.interview_type is None else 
-              ["Select an option", "Data Science", "Education", "Ecommerce",
-               "Healthcare", "Finance", "Technology", "Marketing"].index(st.session_state.interview_type) 
-              if st.session_state.interview_type in ["Data Science", "Education", "Ecommerce",
-                                                       "Healthcare", "Finance", "Technology", "Marketing"] else 0
+        INTERVIEW_TYPES,
+        index=current_index
     )
 
 with col2:
+    current_index = 0
+    if (st.session_state.difficulty_level is not None and
+            st.session_state.difficulty_level in DIFFICULTY_LEVELS):
+        current_index = DIFFICULTY_LEVELS.index(
+            st.session_state.difficulty_level
+        )
+    
     difficulty_level = st.selectbox(
         "Difficulty Level",
-        ["Select an option", "Easy", "Medium", "Hard"],
-        index=0 if st.session_state.difficulty_level is None else
-              ["Select an option", "Easy", "Medium", "Hard"].index(st.session_state.difficulty_level)
-              if st.session_state.difficulty_level in ["Easy", "Medium", "Hard"] else 0
+        DIFFICULTY_LEVELS,
+        index=current_index
     )
 
 with col3:
+    current_index = 0
+    if (st.session_state.interviewer_type is not None and
+            st.session_state.interviewer_type in INTERVIEWER_STYLES):
+        current_index = INTERVIEWER_STYLES.index(
+            st.session_state.interviewer_type
+        )
+    
     interviewer_type = st.selectbox(
         "Interviewer Style",
-        ["Select an option", "Strict", "Neutral", "Friendly"],
-        index=0 if st.session_state.interviewer_type is None else
-              ["Select an option", "Strict", "Neutral", "Friendly"].index(st.session_state.interviewer_type)
-              if st.session_state.interviewer_type in ["Strict", "Neutral", "Friendly"] else 0
+        INTERVIEWER_STYLES,
+        index=current_index
     )
 
-# --- AI Settings Section ---
+# AI Settings Section
 st.session_state.temperature = st.slider(
     "AI Creativity",
     min_value=0.0,
@@ -261,116 +312,152 @@ st.session_state.temperature = st.slider(
     help="Adjust how creative the AI responses are"
 )
 
-st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+st.session_state.top_p = st.slider(
+    "Top P (Nucleus Sampling)",
+    min_value=0.0,
+    max_value=1.0,
+    value=st.session_state.top_p,
+    step=0.05,
+    help="Controls diversity via nucleus sampling (lower = more focused)"
+)
 
-# --- Initialize session after user selects type, difficulty, and interviewer type ---
-if (st.session_state.interview_type is None and 
-    interview_type != "Select an option" and 
-    difficulty_level != "Select an option" and
-    interviewer_type != "Select an option"):
-    
-    st.session_state.interview_type = interview_type
-    st.session_state.difficulty_level = difficulty_level
-    st.session_state.interviewer_type = interviewer_type
-    
-    # Customize instructions based on difficulty level
-    difficulty_instructions = {
-        "Easy": """
+st.markdown(
+    '<div class="section-divider"></div>',
+    unsafe_allow_html=True
+)
+
+# Difficulty level instructions
+DIFFICULTY_INSTRUCTIONS = {
+    "Easy": """
 - Ask foundational and entry-level questions
 - Focus on basic concepts and straightforward scenarios
 - Provide encouraging and detailed feedback
 - Help build confidence with supportive guidance""",
-        "Medium": """
+    "Medium": """
 - Ask intermediate-level questions that require some experience
 - Include scenario-based questions and practical applications
 - Provide balanced feedback highlighting both strengths and areas for improvement
 - Challenge the user moderately while remaining supportive""",
-        "Hard": """
+    "Hard": """
 - Ask advanced, complex questions requiring deep expertise
 - Include challenging technical problems, edge cases, and strategic thinking
 - Provide critical and detailed feedback with high standards
 - Push the user to demonstrate mastery and expert-level reasoning"""
-    }
-    
-    # Customize instructions based on interviewer type
-    interviewer_instructions = {
-        "Strict": """
+}
+
+# Interviewer type instructions
+INTERVIEWER_INSTRUCTIONS = {
+    "Strict": """
 - Maintain a formal, professional tone at all times
 - Set high expectations and hold the candidate accountable
 - Point out weaknesses and mistakes directly
 - Provide critical feedback without sugarcoating
 - Be demanding and challenge vague or incomplete answers
 - Show limited warmth or encouragement""",
-        "Neutral": """
+    "Neutral": """
 - Maintain a balanced, professional demeanor
 - Provide objective feedback that is neither overly critical nor overly encouraging
 - Be fair and impartial in your assessment
 - Focus on facts and concrete observations
 - Keep emotions and personal opinions minimal""",
-        "Friendly": """
+    "Friendly": """
 - Be warm, encouraging, and supportive throughout
 - Create a comfortable, low-pressure atmosphere
 - Celebrate strengths and progress enthusiastically
 - Frame constructive feedback gently and positively
 - Use encouraging language and show genuine interest
 - Help the candidate feel at ease and confident"""
-    }
+}
+
+# Initialize session after user selects type, difficulty, and interviewer
+if (st.session_state.interview_type is None and
+        interview_type != "Select an option" and
+        difficulty_level != "Select an option" and
+        interviewer_type != "Select an option"):
+    
+    st.session_state.interview_type = interview_type
+    st.session_state.difficulty_level = difficulty_level
+    st.session_state.interviewer_type = interviewer_type
     
     system_prompt = f"""
-You are an expert interview coach conducting a {st.session_state.interview_type} interview practice session at a {st.session_state.difficulty_level} difficulty level with a {st.session_state.interviewer_type} interviewing style.
+You are an expert interview coach conducting a \
+{st.session_state.interview_type} interview practice session at a \
+{st.session_state.difficulty_level} difficulty level with a \
+{st.session_state.interviewer_type} interviewing style.
 
 Your responsibilities:
-- Ask one question at a time, strictly related to {st.session_state.interview_type}
+- Ask one question at a time, strictly related to \
+{st.session_state.interview_type}
 - After each user answer, provide concise, constructive feedback
 - Then ask the next relevant question
 - Keep your responses concise
 
 Difficulty Level - {st.session_state.difficulty_level}:
-{difficulty_instructions[st.session_state.difficulty_level]}
+{DIFFICULTY_INSTRUCTIONS[st.session_state.difficulty_level]}
 
 Interviewer Type - {st.session_state.interviewer_type}:
-{interviewer_instructions[st.session_state.interviewer_type]}
+{INTERVIEWER_INSTRUCTIONS[st.session_state.interviewer_type]}
 
 Deciding when to end the interview:
 - You have full control over when the interview concludes
-- Typically conduct 4-6 questions covering different aspects of {st.session_state.interview_type}
+- Typically conduct 4-6 questions covering different aspects of \
+{st.session_state.interview_type}
 - Assess the user's responses for depth, quality, and engagement
-- End the interview when you feel you've covered sufficient ground or if the user seems to be struggling
-- When concluding, say "This concludes our interview session" and provide final comprehensive feedback
+- End the interview when you feel you've covered sufficient ground or if \
+the user seems to be struggling
+- When concluding, say "This concludes our interview session" and provide \
+final comprehensive feedback
 - After concluding, do NOT ask another question
 
-Remember: You decide when the interview is complete based on the conversation flow and coverage of key topics.
+Remember: You decide when the interview is complete based on the \
+conversation flow and coverage of key topics.
 """
-    st.session_state.messages = [{"role": "system", "content": system_prompt}]
+    st.session_state.messages = [
+        {"role": "system", "content": system_prompt}
+    ]
     st.session_state.first_question_asked = False
     st.session_state.session_over = False
     st.session_state.user_input = ""
 
-# --- Content Moderation Function ---
+
 def moderate_content(text):
-    """Check content using OpenAI's moderation API"""
+    """Check content using OpenAI's moderation API.
+    
+    Args:
+        text: The text content to moderate
+        
+    Returns:
+        tuple: (is_safe: bool, error_message: str)
+    """
     try:
         response = openai_client.moderations.create(input=text)
         result = response.results[0]
         
         if result.flagged:
-            # Get specific categories that were flagged
-            flagged_categories = [cat for cat, flagged in result.categories.__dict__.items() if flagged]
-            return False, f"Content violates usage policies ({', '.join(flagged_categories)}). Please provide appropriate responses."
+            flagged_categories = [
+                cat for cat, flagged in result.categories.__dict__.items()
+                if flagged
+            ]
+            error_msg = (
+                f"Content violates usage policies "
+                f"({', '.join(flagged_categories)}). "
+                f"Please provide appropriate responses."
+            )
+            return False, error_msg
         return True, ""
     except Exception as e:
-        # If moderation fails, log error but allow content (fail open)
         st.warning(f"Moderation check temporarily unavailable: {str(e)}")
         return True, ""
 
-# --- Function to get AI response ---
+
 def get_ai_response():
+    """Get AI response from OpenAI and update session state."""
     response = openai_client.chat.completions.create(
         model="gpt-4o-mini",
         messages=st.session_state.messages,
         temperature=st.session_state.temperature,
         max_tokens=300,
-        top_p=1.0,
+        top_p=st.session_state.top_p,
         frequency_penalty=0,
         presence_penalty=0,
     )
@@ -391,33 +478,53 @@ def get_ai_response():
     if any(phrase in ai_message.lower() for phrase in conclusion_phrases):
         st.session_state.session_over = True
     
-    st.session_state.messages.append({"role": "assistant", "content": ai_message})
+    st.session_state.messages.append(
+        {"role": "assistant", "content": ai_message}
+    )
 
-# --- Generate first AI question if not yet asked ---
-if st.session_state.interview_type and not st.session_state.first_question_asked:
+
+# Generate first AI question if not yet asked
+if (st.session_state.interview_type and
+        not st.session_state.first_question_asked):
     get_ai_response()
     st.session_state.first_question_asked = True
 
-# --- Display conversation history ---
+# Display conversation history
 for msg in st.session_state.messages:
     if msg["role"] == "assistant":
-        st.markdown(f'<div class="ai-message"><strong>AI Coach</strong><br><br>{msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="ai-message"><strong>AI Coach</strong><br><br>'
+            f'{msg["content"]}</div>',
+            unsafe_allow_html=True
+        )
     elif msg["role"] == "user":
-        st.markdown(f'<div class="user-message"><strong>You</strong><br><br>{msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="user-message"><strong>You</strong><br><br>'
+            f'{msg["content"]}</div>',
+            unsafe_allow_html=True
+        )
 
-# --- Session ended message and Reset button (show BEFORE input if session over) ---
+# Session ended message and Reset button
 if st.session_state.session_over:
-    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-    st.success("✅ Interview session complete. Great job!")
+    st.markdown(
+        '<div class="section-divider"></div>',
+        unsafe_allow_html=True
+    )
+    st.success("Interview session complete. Great job!")
     
-    if st.button("Start New Interview", type="primary", use_container_width=True):
+    if st.button(
+        "Start New Interview",
+        type="primary",
+        use_container_width=True
+    ):
         # Clear all session state variables to reset to original state
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
 
-# --- Input box and submit button: only if session NOT over ---
-elif st.session_state.first_question_asked and not st.session_state.session_over:
+# Input box and submit button: only if session NOT over
+elif (st.session_state.first_question_asked and
+        not st.session_state.session_over):
     user_input = st.text_area(
         "Your Answer",
         value="",
@@ -434,7 +541,9 @@ elif st.session_state.first_question_asked and not st.session_state.session_over
             if not is_safe:
                 st.error(error_message)
             else:
-                st.session_state.messages.append({"role": "user", "content": user_input.strip()})
+                st.session_state.messages.append(
+                    {"role": "user", "content": user_input.strip()}
+                )
                 get_ai_response()
                 st.session_state.input_counter += 1
                 st.rerun()
