@@ -1,7 +1,6 @@
 """AI Interview Coach - A Streamlit application for interview practice."""
 
 import os
-
 from dotenv import load_dotenv
 import streamlit as st
 from openai import OpenAI
@@ -353,13 +352,11 @@ DIFFICULTY_INSTRUCTIONS = {
     "Medium": """
 - Ask intermediate-level questions that require some experience
 - Include scenario-based questions and practical applications
-- Provide balanced feedback highlighting both strengths and areas for \
-improvement
+- Provide balanced feedback highlighting both strengths and areas for improvement
 - Challenge the user moderately while remaining supportive""",
     "Hard": """
 - Ask advanced, complex questions requiring deep expertise
-- Include challenging technical problems, edge cases, and strategic \
-thinking
+- Include challenging technical problems, edge cases, and strategic thinking
 - Provide critical and detailed feedback with high standards
 - Push the user to demonstrate mastery and expert-level reasoning"""
 }
@@ -375,8 +372,7 @@ INTERVIEWER_INSTRUCTIONS = {
 - Show limited warmth or encouragement""",
     "Neutral": """
 - Maintain a balanced, professional demeanor
-- Provide objective feedback that is neither overly critical nor overly \
-encouraging
+- Provide objective feedback that is neither overly critical nor overly encouraging
 - Be fair and impartial in your assessment
 - Focus on facts and concrete observations
 - Keep emotions and personal opinions minimal""",
@@ -401,38 +397,39 @@ if (st.session_state.interview_type is None and
     st.session_state.interviewer_type = interviewer_type
     st.session_state.llm_choice = llm_choice
     
-    # Build system prompt
-    system_prompt = (
-        f"You are an expert interview coach conducting a "
-        f"{st.session_state.interview_type} interview practice session "
-        f"at a {st.session_state.difficulty_level} difficulty level with "
-        f"a {st.session_state.interviewer_type} interviewing style.\n\n"
-        f"Your responsibilities:\n"
-        f"- Ask one question at a time, strictly related to "
-        f"{st.session_state.interview_type}\n"
-        f"- After each user answer, provide concise, constructive "
-        f"feedback\n"
-        f"- Then ask the next relevant question\n"
-        f"- Keep your responses concise\n\n"
-        f"Difficulty Level - {st.session_state.difficulty_level}:\n"
-        f"{DIFFICULTY_INSTRUCTIONS[st.session_state.difficulty_level]}\n\n"
-        f"Interviewer Type - {st.session_state.interviewer_type}:\n"
-        f"{INTERVIEWER_INSTRUCTIONS[st.session_state.interviewer_type]}\n\n"
-        f"Deciding when to end the interview:\n"
-        f"- You have full control over when the interview concludes\n"
-        f"- Typically conduct 4-6 questions covering different aspects of "
-        f"{st.session_state.interview_type}\n"
-        f"- Assess the user's responses for depth, quality, and "
-        f"engagement\n"
-        f"- End the interview when you feel you've covered sufficient "
-        f"ground or if the user seems to be struggling\n"
-        f"- When concluding, say \"This concludes our interview session\" "
-        f"and provide final comprehensive feedback\n"
-        f"- After concluding, do NOT ask another question\n\n"
-        f"Remember: You decide when the interview is complete based on "
-        f"the conversation flow and coverage of key topics."
-    )
-    
+    system_prompt = f"""
+You are an expert interview coach conducting a \
+{st.session_state.interview_type} interview practice session at a \
+{st.session_state.difficulty_level} difficulty level with a \
+{st.session_state.interviewer_type} interviewing style.
+
+Your responsibilities:
+- Ask one question at a time, strictly related to \
+{st.session_state.interview_type}
+- After each user answer, provide concise, constructive feedback
+- Then ask the next relevant question
+- Keep your responses concise
+
+Difficulty Level - {st.session_state.difficulty_level}:
+{DIFFICULTY_INSTRUCTIONS[st.session_state.difficulty_level]}
+
+Interviewer Type - {st.session_state.interviewer_type}:
+{INTERVIEWER_INSTRUCTIONS[st.session_state.interviewer_type]}
+
+Deciding when to end the interview:
+- You have full control over when the interview concludes
+- Typically conduct 4-6 questions covering different aspects of \
+{st.session_state.interview_type}
+- Assess the user's responses for depth, quality, and engagement
+- End the interview when you feel you've covered sufficient ground or if \
+the user seems to be struggling
+- When concluding, say "This concludes our interview session" and provide \
+final comprehensive feedback
+- After concluding, do NOT ask another question
+
+Remember: You decide when the interview is complete based on the \
+conversation flow and coverage of key topics.
+"""
     st.session_state.messages = [
         {"role": "system", "content": system_prompt}
     ]
@@ -473,6 +470,7 @@ def moderate_content(text):
 
 def get_ai_response():
     """Get AI response from selected LLM and update session state."""
+    
     if st.session_state.llm_choice == "OpenAI":
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
