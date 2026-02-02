@@ -1,15 +1,6 @@
 """
 AI Interview Coach - A Streamlit application for interview practice.
 
-This application provides an interactive interview practice environment with:
-- Multiple interview types and difficulty levels
-- Customizable interviewer styles
-- Multi-LLM support (OpenAI, Anthropic, Mistral)
-- Real-time content moderation
-- Adjustable AI parameters
-
-Author: Kevin Nouri
-Version: 1.0.0
 """
 
 import os
@@ -24,13 +15,11 @@ from mistralai import Mistral
 # CONFIGURATION & INITIALIZATION
 # ============================================================================
 
-# Load API keys from .env file
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
-# Initialize API clients
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 mistral_client = Mistral(api_key=MISTRAL_API_KEY)
@@ -467,7 +456,7 @@ if (st.session_state.interview_type is None and
     st.session_state.interviewer_type = interviewer_type
     st.session_state.llm_choice = llm_choice
     
-    # Build system prompt
+    
     system_prompt = (
         f"You are an expert interview coach conducting a "
         f"{st.session_state.interview_type} interview practice session "
@@ -563,7 +552,7 @@ def get_ai_response():
         ai_message = response.choices[0].message.content
     
     elif st.session_state.llm_choice == "Anthropic":
-        # Extract system message and user/assistant messages
+       
         system_msg = ""
         conversation_msgs = []
         
@@ -573,7 +562,7 @@ def get_ai_response():
             else:
                 conversation_msgs.append(msg)
         
-        # If no conversation messages yet, add initial user message
+        
         if len(conversation_msgs) == 0:
             conversation_msgs = [
                 {"role": "user", "content": "Begin the interview."}
@@ -597,7 +586,7 @@ def get_ai_response():
         )
         ai_message = response.choices[0].message.content
     
-    # Check if AI has concluded the session
+    
     conclusion_phrases = [
         "this concludes our interview",
         "this concludes the interview",
@@ -621,13 +610,13 @@ def get_ai_response():
 # MAIN APPLICATION FLOW
 # ============================================================================
 
-# Generate first AI question if not yet asked
+
 if (st.session_state.interview_type and
         not st.session_state.first_question_asked):
     get_ai_response()
     st.session_state.first_question_asked = True
 
-# Display conversation history
+
 for msg in st.session_state.messages:
     if msg["role"] == "assistant":
         st.markdown(
@@ -642,7 +631,7 @@ for msg in st.session_state.messages:
             unsafe_allow_html=True
         )
 
-# Session ended message and Reset button
+
 if st.session_state.session_over:
     st.markdown(
         '<div class="section-divider"></div>',
@@ -655,12 +644,12 @@ if st.session_state.session_over:
         type="primary",
         use_container_width=True
     ):
-        # Clear all session state variables to reset to original state
+        
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
 
-# Input box and submit button: only if session NOT over
+
 elif (st.session_state.first_question_asked and
         not st.session_state.session_over):
     user_input = st.text_area(
