@@ -1,7 +1,18 @@
-"""AI Interview Coach - A Streamlit application for interview practice."""
+"""
+AI Interview Coach - A Streamlit application for interview practice.
+
+This application provides an interactive interview practice environment with:
+- Multiple interview types and difficulty levels
+- Customizable interviewer styles
+- Multi-LLM support (OpenAI, Anthropic, Mistral)
+- Real-time content moderation
+- Adjustable AI parameters
+
+Author: Kevin Nouri
+Version: 1.0.0
+"""
 
 import os
-
 from dotenv import load_dotenv
 import streamlit as st
 from openai import OpenAI
@@ -9,19 +20,26 @@ from anthropic import Anthropic
 from mistralai import Mistral
 
 
-# Load API keys
+# ============================================================================
+# CONFIGURATION & INITIALIZATION
+# ============================================================================
+
+# Load API keys from .env file
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
-# Initialize clients
+# Initialize API clients
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 mistral_client = Mistral(api_key=MISTRAL_API_KEY)
 
 
-# Page configuration
+# ============================================================================
+# PAGE CONFIGURATION
+# ============================================================================
+
 st.set_page_config(
     page_title="AI Interview Coach",
     page_icon="✨",
@@ -29,7 +47,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for minimalist clean styling
+
+# ============================================================================
+# CUSTOM CSS STYLING
+# ============================================================================
+
 st.markdown("""
     <style>
     /* Import Google Font */
@@ -210,7 +232,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title with custom styling
+
+# ============================================================================
+# APP HEADER
+# ============================================================================
+
 st.markdown(
     '<h1 class="main-title">✨ AI Interview Coach</h1>',
     unsafe_allow_html=True
@@ -220,13 +246,18 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Initialize all session state variables
+
+# ============================================================================
+# SESSION STATE INITIALIZATION
+# ============================================================================
+
 SESSION_VARS = [
     "interview_type",
     "difficulty_level",
     "interviewer_type",
     "llm_choice",
     "temperature",
+    "max_tokens",
     "messages",
     "session_over",
     "user_input",
@@ -238,6 +269,8 @@ for var in SESSION_VARS:
     if var not in st.session_state:
         if var == "temperature":
             st.session_state.temperature = 0.7
+        elif var == "max_tokens":
+            st.session_state.max_tokens = 300
         elif var == "messages":
             st.session_state.messages = []
         elif var == "session_over":
@@ -249,8 +282,10 @@ for var in SESSION_VARS:
         else:
             st.session_state[var] = None
 
-# Interview Configuration Section - First row
-col1, col2 = st.columns(2)
+
+# ============================================================================
+# CONSTANTS - Interview Options
+# ============================================================================
 
 INTERVIEW_TYPES = [
     "Select an option",
@@ -264,6 +299,17 @@ INTERVIEW_TYPES = [
 ]
 
 DIFFICULTY_LEVELS = ["Select an option", "Easy", "Medium", "Hard"]
+
+INTERVIEWER_STYLES = ["Select an option", "Friendly", "Neutral", "Strict"]
+
+LLM_CHOICES = ["Select an option", "OpenAI", "Anthropic", "Mistral"]
+
+
+# ============================================================================
+# UI COMPONENTS - Interview Configuration (Row 1)
+# ============================================================================
+
+col1, col2 = st.columns(2)
 
 with col1:
     current_index = 0
@@ -293,12 +339,12 @@ with col2:
         index=current_index
     )
 
-# Interview Configuration Section - Second row
+
+# ============================================================================
+# UI COMPONENTS - Interview Configuration (Row 2)
+# ============================================================================
+
 col3, col4 = st.columns(2)
-
-INTERVIEWER_STYLES = ["Select an option", "Friendly", "Neutral", "Strict"]
-
-LLM_CHOICES = ["Select an option", "OpenAI", "Anthropic", "Mistral"]
 
 with col3:
     current_index = 0
@@ -328,7 +374,11 @@ with col4:
         index=current_index
     )
 
-# AI Settings Section
+
+# ============================================================================
+# UI COMPONENTS - AI Settings
+# ============================================================================
+
 st.session_state.temperature = st.slider(
     "AI Creativity (Temperature)",
     min_value=0.0,
@@ -338,12 +388,25 @@ st.session_state.temperature = st.slider(
     help="Adjust how creative the AI responses are"
 )
 
+st.session_state.max_tokens = st.slider(
+    "Response Length (Max Tokens)",
+    min_value=100,
+    max_value=1000,
+    value=st.session_state.max_tokens,
+    step=50,
+    help="Control the maximum length of AI responses (100-1000 tokens)"
+)
+
 st.markdown(
     '<div class="section-divider"></div>',
     unsafe_allow_html=True
 )
 
-# Difficulty level instructions
+
+# ============================================================================
+# CONSTANTS - Interview Instructions
+# ============================================================================
+
 DIFFICULTY_INSTRUCTIONS = {
     "Easy": """
 - Ask foundational and entry-level questions
@@ -364,7 +427,6 @@ thinking
 - Push the user to demonstrate mastery and expert-level reasoning"""
 }
 
-# Interviewer type instructions
 INTERVIEWER_INSTRUCTIONS = {
     "Strict": """
 - Maintain a formal, professional tone at all times
@@ -389,7 +451,11 @@ encouraging
 - Help the candidate feel at ease and confident"""
 }
 
-# Initialize session after user selects all options
+
+# ============================================================================
+# SESSION INITIALIZATION
+# ============================================================================
+
 if (st.session_state.interview_type is None and
         interview_type != "Select an option" and
         difficulty_level != "Select an option" and
@@ -441,14 +507,21 @@ if (st.session_state.interview_type is None and
     st.session_state.user_input = ""
 
 
+# ============================================================================
+# CORE FUNCTIONS
+# ============================================================================
+
 def moderate_content(text):
-    """Check content using OpenAI's moderation API.
+    """
+    Check content using OpenAI's moderation API.
     
     Args:
-        text: The text content to moderate
+        text (str): The text content to moderate
         
     Returns:
         tuple: (is_safe: bool, error_message: str)
+            - is_safe: True if content passes moderation, False otherwise
+            - error_message: Description of violation if flagged, empty string otherwise
     """
     try:
         response = openai_client.moderations.create(input=text)
@@ -472,13 +545,18 @@ def moderate_content(text):
 
 
 def get_ai_response():
-    """Get AI response from selected LLM and update session state."""
+    """
+    Get AI response from selected LLM and update session state.
+    
+    Handles different LLM APIs (OpenAI, Anthropic, Mistral) and checks
+    for interview conclusion phrases.
+    """
     if st.session_state.llm_choice == "OpenAI":
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=st.session_state.messages,
             temperature=st.session_state.temperature,
-            max_tokens=300,
+            max_tokens=st.session_state.max_tokens,
             frequency_penalty=0,
             presence_penalty=0,
         )
@@ -506,7 +584,7 @@ def get_ai_response():
             system=system_msg,
             messages=conversation_msgs,
             temperature=st.session_state.temperature,
-            max_tokens=300,
+            max_tokens=st.session_state.max_tokens,
         )
         ai_message = response.content[0].text
     
@@ -515,11 +593,11 @@ def get_ai_response():
             model="mistral-small-latest",
             messages=st.session_state.messages,
             temperature=st.session_state.temperature,
-            max_tokens=300,
+            max_tokens=st.session_state.max_tokens,
         )
         ai_message = response.choices[0].message.content
     
-    # Check if AI has concluded the session BEFORE adding to messages
+    # Check if AI has concluded the session
     conclusion_phrases = [
         "this concludes our interview",
         "this concludes the interview",
@@ -538,6 +616,10 @@ def get_ai_response():
         {"role": "assistant", "content": ai_message}
     )
 
+
+# ============================================================================
+# MAIN APPLICATION FLOW
+# ============================================================================
 
 # Generate first AI question if not yet asked
 if (st.session_state.interview_type and
