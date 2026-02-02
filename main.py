@@ -1,8 +1,3 @@
-"""
-AI Interview Coach - A Streamlit application for interview practice.
-
-"""
-
 import os
 from dotenv import load_dotenv
 import streamlit as st
@@ -10,10 +5,6 @@ from openai import OpenAI
 from anthropic import Anthropic
 from mistralai import Mistral
 
-
-# ============================================================================
-# CONFIGURATION & INITIALIZATION
-# ============================================================================
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -25,10 +16,6 @@ anthropic_client = Anthropic(api_key=ANTHROPIC_API_KEY)
 mistral_client = Mistral(api_key=MISTRAL_API_KEY)
 
 
-# ============================================================================
-# PAGE CONFIGURATION
-# ============================================================================
-
 st.set_page_config(
     page_title="AI Interview Coach",
     page_icon="✨",
@@ -36,10 +23,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-
-# ============================================================================
-# CUSTOM CSS STYLING
-# ============================================================================
 
 st.markdown("""
     <style>
@@ -222,10 +205,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ============================================================================
-# APP HEADER
-# ============================================================================
-
 st.markdown(
     '<h1 class="main-title">✨ AI Interview Coach</h1>',
     unsafe_allow_html=True
@@ -235,10 +214,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-# ============================================================================
-# SESSION STATE INITIALIZATION
-# ============================================================================
 
 SESSION_VARS = [
     "interview_type",
@@ -272,9 +247,6 @@ for var in SESSION_VARS:
             st.session_state[var] = None
 
 
-# ============================================================================
-# CONSTANTS - Interview Options
-# ============================================================================
 
 INTERVIEW_TYPES = [
     "Select an option",
@@ -294,9 +266,6 @@ INTERVIEWER_STYLES = ["Select an option", "Friendly", "Neutral", "Strict"]
 LLM_CHOICES = ["Select an option", "OpenAI", "Anthropic", "Mistral"]
 
 
-# ============================================================================
-# UI COMPONENTS - Interview Configuration (Row 1)
-# ============================================================================
 
 col1, col2 = st.columns(2)
 
@@ -329,10 +298,6 @@ with col2:
     )
 
 
-# ============================================================================
-# UI COMPONENTS - Interview Configuration (Row 2)
-# ============================================================================
-
 col3, col4 = st.columns(2)
 
 with col3:
@@ -364,9 +329,6 @@ with col4:
     )
 
 
-# ============================================================================
-# UI COMPONENTS - AI Settings
-# ============================================================================
 
 st.session_state.temperature = st.slider(
     "AI Creativity (Temperature)",
@@ -392,9 +354,6 @@ st.markdown(
 )
 
 
-# ============================================================================
-# CONSTANTS - Interview Instructions
-# ============================================================================
 
 DIFFICULTY_INSTRUCTIONS = {
     "Easy": """
@@ -440,10 +399,6 @@ encouraging
 - Help the candidate feel at ease and confident"""
 }
 
-
-# ============================================================================
-# SESSION INITIALIZATION
-# ============================================================================
 
 if (st.session_state.interview_type is None and
         interview_type != "Select an option" and
@@ -496,9 +451,6 @@ if (st.session_state.interview_type is None and
     st.session_state.user_input = ""
 
 
-# ============================================================================
-# CORE FUNCTIONS
-# ============================================================================
 
 def moderate_content(text):
     """
@@ -596,10 +548,6 @@ def get_ai_response():
         {"role": "assistant", "content": ai_message}
     )
 
-
-# ============================================================================
-# MAIN APPLICATION FLOW
-# ============================================================================
 
 
 if (st.session_state.interview_type and
