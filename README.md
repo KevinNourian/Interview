@@ -38,8 +38,9 @@ The app simulates realistic interview sessions across multiple professional doma
   - Provides concise, constructive feedback after each answer
   - Dynamically decides when the interview is complete (typically 4–6 questions)
 
-- **Creativity Control**
+- **Customizable AI Parameters**
   - Adjustable temperature slider to control AI response creativity and style
+  - Adjustable max tokens slider to control response length (100-1000 tokens)
 
 - **Content Moderation**
   - User inputs are checked via OpenAI's moderation API for safe and appropriate use across all LLM providers
@@ -58,6 +59,7 @@ The app simulates realistic interview sessions across multiple professional doma
    - Interviewer style
    - Large Language Model (OpenAI, Anthropic, or Mistral)
    - AI creativity (temperature)
+   - Response length (max tokens)
 
 2. The AI interviewer:
    - Asks domain-specific questions
