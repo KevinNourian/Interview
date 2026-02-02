@@ -504,13 +504,6 @@ def moderate_content(text):
     """
     Check content using OpenAI's moderation API.
     
-    Args:
-        text (str): The text content to moderate
-        
-    Returns:
-        tuple: (is_safe: bool, error_message: str)
-            - is_safe: True if content passes moderation, False otherwise
-            - error_message: Description of violation if flagged, empty string otherwise
     """
     try:
         response = openai_client.moderations.create(input=text)
@@ -536,9 +529,7 @@ def moderate_content(text):
 def get_ai_response():
     """
     Get AI response from selected LLM and update session state.
-    
-    Handles different LLM APIs (OpenAI, Anthropic, Mistral) and checks
-    for interview conclusion phrases.
+
     """
     if st.session_state.llm_choice == "OpenAI":
         response = openai_client.chat.completions.create(
@@ -662,7 +653,7 @@ elif (st.session_state.first_question_asked and
     
     if st.button("Submit Answer", use_container_width=True):
         if user_input.strip():
-            # Moderate user input before processing
+            
             is_safe, error_message = moderate_content(user_input.strip())
             
             if not is_safe:
