@@ -1,0 +1,175 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Global styling */
+* {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Main app background */
+.stApp {
+    background-color: #fafafa;
+}
+
+/* Main title styling */
+.main-title {
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1rem;
+    margin-bottom: 3rem;
+    font-weight: 400;
+}
+
+/* Section dividers */
+.section-divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 2.5rem 0;
+}
+
+/* Card containers */
+.config-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 1.5rem;
+}
+
+/* Labels */
+.stSelectbox label, .stSlider label, .stTextArea label {
+    color: #2c3e50 !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+}
+
+/* Selectbox styling */
+.stSelectbox > div > div {
+    background-color: white;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.stSelectbox > div > div:hover {
+    border-color: #3498db;
+}
+
+/* Slider styling */
+.stSlider > div > div > div {
+    background-color: #3498db;
+}
+
+/* AI Message styling */
+.ai-message {
+    background: white;
+    border: 1.5px solid #e8f4f8;
+    border-left: 4px solid #3498db;
+    color: #2c3e50;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 6px rgba(52, 152, 219, 0.08);
+}
+
+.ai-message strong {
+    color: #3498db;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* User Message styling */
+.user-message {
+    background: white;
+    border: 1.5px solid #e8f8f5;
+    border-left: 4px solid #27ae60;
+    color: #2c3e50;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 6px rgba(39, 174, 96, 0.08);
+}
+
+.user-message strong {
+    color: #27ae60;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Button styling */
+.stButton>button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.7rem 2rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+}
+
+.stButton>button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
+}
+
+/* Text area styling */
+.stTextArea>div>div>textarea {
+    background-color: white;
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    padding: 1rem;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.stTextArea>div>div>textarea:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Success message */
+.stSuccess {
+    background-color: #d5f4e6;
+    border-left: 4px solid #27ae60;
+    color: #27ae60;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Error message */
+.stError {
+    background-color: #fadbd8;
+    border-left: 4px solid #e74c3c;
+    color: #c0392b;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Hide Streamlit elements */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Column spacing */
+[data-testid="column"] {
+    padding: 0 0.5rem;
+}

@@ -1,0 +1,108 @@
+AI Interview Coach - Code Refinement Plan
+============================================
+Created: 2026-02-03
+Status: Not Started
+
+This document outlines 11 planned improvements to main.py, organized by priority.
+
+================================================================================
+CRITICAL FIXES (Must-Have)
+================================================================================
+
+1. Add API key validation at startup
+   - Check if OPENAI_API_KEY, ANTHROPIC_API_KEY, MISTRAL_API_KEY exist
+   - Show error message if any required keys are missing
+   - Prevent app from running with missing credentials
+   Location: Lines 10-16
+
+2. Add error handling to get_ai_response function
+   - Wrap API calls in try-except blocks
+   - Handle connection errors, timeouts, rate limits
+   - Show user-friendly error messages instead of crashes
+   Location: Lines 481-550
+
+3. Add loading spinner when getting AI response
+   - Show "AI Coach is thinking..." while waiting
+   - Better UX feedback during API calls
+   - Use st.spinner() context manager
+   Location: Lines 555-556, 613
+
+================================================================================
+NEW FEATURES (User Requests)
+================================================================================
+
+4. Set up logging configuration and file
+   - Import logging module
+   - Configure log format (timestamp, level, message)
+   - Create interview_coach.log file in project directory
+   - Set appropriate logging level (INFO/DEBUG)
+   Location: Top of file (after imports)
+
+5. Add logging statements throughout the application
+   - Log startup events and configuration
+   - Log user actions (session start, answers submitted)
+   - Log API calls and responses (with timestamps)
+   - Log errors and exceptions
+   - Log session events (interview concluded, reset)
+   Location: Throughout main.py
+
+6. Implement rate limiting for submit button
+   - Track last submission timestamp in session state
+   - Enforce 2-3 second cooldown between submissions
+   - Disable button and show countdown during cooldown
+   - Prevent accidental double-clicks and spam
+   Location: Lines 602-615
+
+================================================================================
+CODE QUALITY (Should-Have)
+================================================================================
+
+7. Extract repetitive selectbox index logic into helper function
+   - Create get_selectbox_index() helper function
+   - Replace 4 duplicate code blocks with function calls
+   - Improves maintainability and readability
+   Location: Lines 273-329
+
+8. Create constants for hardcoded values
+   - Define DEFAULT_OPTION = "Select an option"
+   - Define model names: OPENAI_MODEL, ANTHROPIC_MODEL, MISTRAL_MODEL
+   - Define other magic strings as constants
+   - Place at top of file after imports
+   Location: Top of file, replace usage throughout
+
+================================================================================
+ENHANCEMENTS (Nice-to-Have)
+================================================================================
+
+9. Add comprehensive docstrings to all functions
+   - Document moderate_content() function
+   - Document get_ai_response() function
+   - Add any helper functions with proper docstrings
+   - Follow Google or NumPy docstring format
+   Location: Lines 455, 481, and any new functions
+
+10. Add confirmation dialog before session reset
+    - Use st.session_state to track confirmation request
+    - Show "Are you sure?" before clearing interview
+    - Prevent accidental data loss
+    Location: Lines 581-589
+
+11. Improve session conclusion detection with better pattern matching
+    - Use more robust regex patterns
+    - Add more conclusion phrase variations
+    - Consider case-insensitive matching improvements
+    Location: Lines 533-545
+
+================================================================================
+IMPLEMENTATION NOTES
+================================================================================
+
+- All changes will be made to the original main.py file
+- No new files will be created (except logs)
+- Changes are tracked via git for easy rollback
+- Each item will be implemented incrementally
+- Progress tracked via TodoWrite tool during implementation
+
+================================================================================
+END OF PLAN
+================================================================================
